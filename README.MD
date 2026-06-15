@@ -4,6 +4,13 @@ A secure, high-performance Document Intelligence platform that ingests complex, 
 
 ---
 
+## 🔗 Live Demo & Video
+
+* **Demo Video**: [Watch Demo Video](https://drive.google.com/file/d/1b23TGFjA3qyiMz4ax7mT9Gu3Wn7K-Z_b/view?usp=sharing)
+* **Demo Live Link**: [Access DocPulse Live](https://docpulse-intelligence.onrender.com/)
+
+---
+
 ## 🏗️ System Architecture
 
 ### Pipeline Flow
