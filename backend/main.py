@@ -18,6 +18,12 @@ if os.path.exists(dotenv_path):
                 key, val = line.split("=", 1)
                 os.environ[key.strip()] = val.strip()
 
+import sys
+# Add backend directory to sys.path to resolve imports on Render
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 from parser import DocumentParser
 from classifier import DocumentClassifier
 from vector_store import VectorStore
