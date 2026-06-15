@@ -25,4 +25,3 @@ backend/storage/
 # Frontend dependencies & next.js build
 frontend/node_modules/
 frontend/.next/
-frontend/out/

@@ -2,6 +2,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 import os
 import tempfile
 import hashlib
@@ -20,7 +21,6 @@ app.add_middleware(
 )
 
 # Health check endpoint (VERY IMPORTANT for Render)
-@app.get("/")
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "service": "DocPulse-Intelligence"}
@@ -52,6 +52,12 @@ async def chat(query: str):
         "citations": []
     }
 
+# Mount static frontend files
+frontend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../frontend/out")
+if os.path.exists(frontend_dir):
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="static")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
