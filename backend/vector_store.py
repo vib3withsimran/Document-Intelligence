@@ -1,7 +1,8 @@
 import os
 import chromadb
-from chromadb.utils import embedding_functions
 import uuid
+from chromadb import EmbeddingFunction
+from chromadb.api.types import Documents, Embeddings
 
 # Optimize memory usage for low-RAM server environments (like Render Free Tier)
 # Limits PyTorch CPU threads to prevent memory explosion during tokenization/embedding.
@@ -12,16 +13,59 @@ try:
 except Exception:
     pass
 
+class CloudOrLocalEmbeddingFunction(EmbeddingFunction):
+    def name(self) -> str:
+        return "sentence_transformer"
+
+    def __init__(self):
+        self.is_render = os.environ.get("RENDER") == "true" or os.environ.get("PORT") is not None
+        if not self.is_render:
+            print("Initializing local SentenceTransformer (All-MiniLM-L6-v2) for development...")
+            from chromadb.utils import embedding_functions
+            self.local_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+                model_name="all-MiniLM-L6-v2"
+            )
+        else:
+            print("Running in Production (Render). Using Hugging Face Inference API for embeddings (0MB RAM footprint).")
+            self.local_fn = None
+            
+    def __call__(self, input: Documents) -> Embeddings:
+        if self.is_render:
+            import requests
+            api_url = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
+            hf_token = os.environ.get("HF_TOKEN")
+            headers = {}
+            if hf_token:
+                headers["Authorization"] = f"Bearer {hf_token}"
+                
+            try:
+                response = requests.post(
+                    api_url, 
+                    headers=headers, 
+                    json={"inputs": input, "options": {"wait_for_model": True}},
+                    timeout=20
+                )
+                if response.status_code == 200:
+                    embeddings = response.json()
+                    if isinstance(embeddings, list) and len(embeddings) > 0 and isinstance(embeddings[0], list):
+                        return embeddings
+                print(f"Hugging Face API error (status {response.status_code}): {response.text}")
+            except Exception as e:
+                print(f"Hugging Face API request failed: {e}")
+                
+            # Fallback locally if HF API failed during dev testing, but on Render we raise error
+            raise Exception("Hugging Face Inference API failed for embeddings in production.")
+        else:
+            return self.local_fn(input)
+
 class VectorStore:
     def __init__(self):
         # Create persistent database in a fixed location inside the backend directory
         db_path = os.path.join(os.path.dirname(__file__), "chroma_db")
         self.client = chromadb.PersistentClient(path=db_path)
         
-        # Use free embedding model (runs locally)
-        self.embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name="all-MiniLM-L6-v2"
-        )
+        # Use cloud embedding API in production (Render) and local in development
+        self.embedding_fn = CloudOrLocalEmbeddingFunction()
         
         # Create or get collection
         self.collection = self.client.get_or_create_collection(
