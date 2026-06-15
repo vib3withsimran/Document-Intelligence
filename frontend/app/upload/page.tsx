@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 interface IngestedFile {
   task_id: string;
   status: 'processing' | 'completed' | 'failed';
@@ -38,7 +40,7 @@ export default function UploadCenter() {
   // Fetch all documents from backend
   const fetchDocuments = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/documents');
+      const res = await axios.get(`${API_URL}/api/documents`);
       setDocuments(res.data || []);
     } catch (err) {
       console.error("Failed to load documents repository", err);
@@ -74,7 +76,7 @@ export default function UploadCenter() {
     const pollInterval = setInterval(() => {
       activeTasks.forEach(async (doc) => {
         try {
-          const res = await axios.get(`http://localhost:8000/status/${doc.task_id}`);
+          const res = await axios.get(`${API_URL}/status/${doc.task_id}`);
           if (res.data.status === 'completed' || res.data.status === 'failed') {
             // Set progress to 100%
             setSimulatedProgress(prev => ({
@@ -116,7 +118,7 @@ export default function UploadCenter() {
     formData.append('file', fileToUpload);
 
     try {
-      const res = await axios.post('http://localhost:8000/api/upload', formData, {
+      const res = await axios.post(`${API_URL}/api/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 function AnimatedCounter({ target, duration = 1000 }: { target: number; duration?: number }) {
   const [count, setCount] = useState(0);
 
@@ -40,7 +42,7 @@ export default function Landing() {
   const [isStatsLoading, setIsStatsLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/documents')
+    fetch(`${API_URL}/api/documents`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

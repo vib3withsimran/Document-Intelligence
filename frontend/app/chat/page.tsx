@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 interface Citation {
   document: string;
   page: number;
@@ -49,7 +51,7 @@ export default function ChatAssistant() {
   // Fetch documents from backend
   const fetchDocuments = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/documents');
+      const res = await axios.get(`${API_URL}/api/documents`);
       setDocuments(res.data || []);
     } catch (err) {
       console.error("Failed to load documents for chat panel", err);
@@ -80,7 +82,7 @@ export default function ChatAssistant() {
     setIsChatLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:8000/api/chat', null, {
+      const res = await axios.post(`${API_URL}/api/chat`, null, {
         params: { query: userMsg }
       });
 

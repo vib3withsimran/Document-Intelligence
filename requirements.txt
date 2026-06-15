@@ -1,0 +1,14 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+python-multipart==0.0.6
+pdfplumber==0.10.3
+pdf2image==1.16.3
+pytesseract==0.3.10
+pillow==10.1.0
+chromadb==0.4.18
+sentence-transformers==2.2.2
+groq==0.4.2
+python-magic==0.4.27
+cryptography==41.0.7
+aiofiles==23.2.1
+gunicorn==21.2.0  # Added for Render compatibility
