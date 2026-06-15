@@ -3,6 +3,15 @@ import chromadb
 from chromadb.utils import embedding_functions
 import uuid
 
+# Optimize memory usage for low-RAM server environments (like Render Free Tier)
+# Limits PyTorch CPU threads to prevent memory explosion during tokenization/embedding.
+try:
+    import torch
+    torch.set_num_threads(1)
+    torch.set_num_interop_threads(1)
+except Exception:
+    pass
+
 class VectorStore:
     def __init__(self):
         # Create persistent database in a fixed location inside the backend directory
